@@ -2,6 +2,9 @@
 
 WIP.
 
+Inspired by [vimwiki][vimwiki] and
+[prashanthellina/follow-markdown-links][followlinks].
+
 ## Installing
 
 Using [vim-plug][vim-plug], add this to your Neovim `init.vim`:
@@ -20,3 +23,7 @@ $ . venv/bin/activate
 $ pip install -r requirements.txt -r requirements-test.txt
 $ pytest
 ```
+
+[vim-plug]: https://github.com/junegunn/vim-plug
+[vimwiki]: https://github.com/vimwiki/vimwiki
+[followlinks]: https://github.com/prashanthellina/follow-markdown-links
