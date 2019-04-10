@@ -1,0 +1,13 @@
+dist: xenial
+
+language: python
+
+# https://github.com/neovim/bot-ci#generated-builds
+before_install:
+  - eval "$(curl -Ss https://raw.githubusercontent.com/neovim/bot-ci/master/scripts/travis-setup.sh) nightly-x64"
+  - pip install -r requirements.txt -r requirements-test.txt
+
+python:
+  - 3.5
+  - 3.6
+  - 3.7
