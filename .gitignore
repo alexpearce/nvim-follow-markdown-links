@@ -1,2 +1,3 @@
 __pycache__
 venv
+test/rplugin_with_path.vim

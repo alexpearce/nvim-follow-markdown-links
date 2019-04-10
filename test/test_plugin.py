@@ -3,6 +3,7 @@
 
 * Test that modifications to the buffer are saved when jumping
 forwards/backwards
+* Add a test to check that our rplugin.vim is in sync with the plugin's API
 """
 import pathlib
 
