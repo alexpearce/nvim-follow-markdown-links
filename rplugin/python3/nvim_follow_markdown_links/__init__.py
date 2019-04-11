@@ -12,8 +12,12 @@ import urllib
 import pynvim
 
 # Match text and URL from an inline Markdown link
-# https://stackoverflow.com/a/40178293
-LINK_RE = re.compile(r'\[([^]]*)\]\(([^\s^\)]*)[\s\)]')
+# Taken from https://stackoverflow.com/a/40178293
+# Modified to allow spaces in the URL
+LINK_RE = re.compile(r'\[([^]]*)\]\(([^\)]*)')
+# A Markdown URL can contain an optional title, separated from the URL by at
+# least one space and surrounded by quotes
+URL_RE = re.compile(r'([^\'^"]+)(\s+[\'"](.*)[\'"])?')
 
 
 @pynvim.plugin
@@ -52,23 +56,42 @@ class FollowMarkdownLinksPlugin:
             return
         _, href = matches.groups()
 
+        # We have the URL component, now parse out the actual URL and the title
+        matches = URL_RE.match(href)
+        href, _, _ = matches.groups()
+        # This assumes filenames do not have trailing whitespace, and is needed
+        # as URL_RE will capture the whitespace between the URL and the title
+        # Would be nicer if we could parse this in the URL matching group
+        href = href.rstrip()
+
         # We only handle foillowing local paths
-        url = urllib.parse.urlparse(href)
+        # Need to escape spaces
+        url = urllib.parse.urlparse(href.replace(' ', '%20'))
         if url.scheme:
             if self.config['open_remote']:
                 # TODO
                 pass
-            self.debug('Path is not local: {}'.format(url))
+            self.debug('Path is not local: {}'.format(url.geturl()))
             return
 
         # Get the path to the open buffer
         # https://unix.stackexchange.com/a/320129
         buffer_path = pathlib.Path(self.nvim.eval('expand("%:p")'))
-        target_path = (buffer_path.parent / url.path).resolve()
+        target_path = (buffer_path.parent / url.path.replace('%20', ' ')).resolve()
         if not target_path.exists():
-            # TODO: print an error/warning?
-            self.debug('Path does not exist: {}'.format(target_path))
-            return
+            extensions = self.nvim.eval('g:follow_markdown_links#extensions') or []
+            found_file = False
+            for ext in extensions:
+                probe = target_path.with_suffix(ext)
+                if probe.exists():
+                    target_path = probe
+                    found_file = True
+
+            # TODO: could print all filenames that we tried
+            if not found_file:
+                # TODO: print an error/warning?
+                self.debug('Path does not exist: {!r} {!r} {!r}'.format(target_path, href, url.path))
+                return
 
         self.buffer_stack.append((buffer_path, (crow, ccol)))
 
