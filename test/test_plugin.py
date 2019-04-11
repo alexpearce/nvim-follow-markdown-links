@@ -15,8 +15,11 @@ def create_files(tmp_path):
     fpath4 = tmp_path / 'file4 with spaces.md'
 
     text1 = 'Follow this [Markdown link](file2.md) now.'
-    text2 = 'Follow another [Markdown link](file1.md) again.'
+    # No extension specified
+    text2 = 'Follow another [Markdown link](file1) again.'
+    # Spaces in the filename
     text3 = 'Should follow another [Markdown link](file4 with spaces.md) again.'
+    # URL title specified
     text4 = 'Follow yet another [Markdown link](file3 with spaces.md "Some title") again.'
     fpath1.write_text(text1)
     fpath2.write_text(text2)
@@ -66,6 +69,20 @@ def test_follow_spaces(vim, tmp_path):
 
     vim.current.window.cursor = [1, opener1]
     vim.call('FollowMarkdownLink')
+    assert pathlib.Path(vim.eval('expand("%:p")')) == fpath2
+
+    vim.current.window.cursor = [1, opener2]
+    vim.call('FollowMarkdownLink')
+    assert pathlib.Path(vim.eval('expand("%:p")')) == fpath1
+
+
+def test_extension_adding(vim, tmp_path):
+    fpath1, fpath2, _, _ = create_files(tmp_path)
+
+    opener2 = fpath2.read_text().find('[')
+
+    # Open the second file
+    vim.command('edit {}'.format(fpath2))
     assert pathlib.Path(vim.eval('expand("%:p")')) == fpath2
 
     vim.current.window.cursor = [1, opener2]

@@ -79,9 +79,19 @@ class FollowMarkdownLinksPlugin:
         buffer_path = pathlib.Path(self.nvim.eval('expand("%:p")'))
         target_path = (buffer_path.parent / url.path.replace('%20', ' ')).resolve()
         if not target_path.exists():
-            # TODO: print an error/warning?
-            self.debug('Path does not exist: {}'.format(target_path))
-            return
+            extensions = self.nvim.eval('g:follow_markdown_links#extensions') or []
+            found_file = False
+            for ext in extensions:
+                probe = target_path.with_suffix(ext)
+                if probe.exists():
+                    target_path = probe
+                    found_file = True
+
+            # TODO: could print all filenames that we tried
+            if not found_file:
+                # TODO: print an error/warning?
+                self.debug('Path does not exist: {!r} {!r} {!r}'.format(target_path, href, url.path))
+                return
 
         self.buffer_stack.append((buffer_path, (crow, ccol)))
 

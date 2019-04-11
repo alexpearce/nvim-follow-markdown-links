@@ -1,1 +1,3 @@
 let &runtimepath.=','.escape(expand('<sfile>:p:h'), '\,')
+
+let g:follow_markdown_links#extensions = ['.md']
