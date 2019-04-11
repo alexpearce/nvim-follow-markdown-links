@@ -1,4 +1,4 @@
-# Follow Markdown links in Neovim
+# Follow Markdown links in Neovim [![Build Status](https://travis-ci.org/alexpearce/nvim-follow-markdown-links.svg?branch=master)](https://travis-ci.org/alexpearce/nvim-follow-markdown-links)
 
 WIP.
 
