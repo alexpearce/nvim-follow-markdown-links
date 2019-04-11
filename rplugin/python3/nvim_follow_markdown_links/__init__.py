@@ -12,8 +12,12 @@ import urllib
 import pynvim
 
 # Match text and URL from an inline Markdown link
-# https://stackoverflow.com/a/40178293
-LINK_RE = re.compile(r'\[([^]]*)\]\(([^\s^\)]*)[\s\)]')
+# Taken from https://stackoverflow.com/a/40178293
+# Modified to allow spaces in the URL
+LINK_RE = re.compile(r'\[([^]]*)\]\(([^\)]*)')
+# A Markdown URL can contain an optional title, separated from the URL by at
+# least one space and surrounded by quotes
+URL_RE = re.compile(r'(.*)(\s+[\'"](.*)[\'"])?')
 
 
 @pynvim.plugin
@@ -52,19 +56,24 @@ class FollowMarkdownLinksPlugin:
             return
         _, href = matches.groups()
 
+        # We have the URL component, now parse out the actual URL and the title
+        matches = URL_RE.match(href)
+        href, _, _ = matches.groups()
+
         # We only handle foillowing local paths
-        url = urllib.parse.urlparse(href)
+        # Need to escape spaces
+        url = urllib.parse.urlparse(href.replace(' ', '%20'))
         if url.scheme:
             if self.config['open_remote']:
                 # TODO
                 pass
-            self.debug('Path is not local: {}'.format(url))
+            self.debug('Path is not local: {}'.format(url.geturl()))
             return
 
         # Get the path to the open buffer
         # https://unix.stackexchange.com/a/320129
         buffer_path = pathlib.Path(self.nvim.eval('expand("%:p")'))
-        target_path = (buffer_path.parent / url.path).resolve()
+        target_path = (buffer_path.parent / url.path.replace('%20', ' ')).resolve()
         if not target_path.exists():
             # TODO: print an error/warning?
             self.debug('Path does not exist: {}'.format(target_path))
