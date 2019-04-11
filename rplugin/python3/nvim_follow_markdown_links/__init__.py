@@ -17,7 +17,7 @@ import pynvim
 LINK_RE = re.compile(r'\[([^]]*)\]\(([^\)]*)')
 # A Markdown URL can contain an optional title, separated from the URL by at
 # least one space and surrounded by quotes
-URL_RE = re.compile(r'(.*)(\s+[\'"](.*)[\'"])?')
+URL_RE = re.compile(r'([^\'^"]+)(\s+[\'"](.*)[\'"])?')
 
 
 @pynvim.plugin
@@ -59,6 +59,10 @@ class FollowMarkdownLinksPlugin:
         # We have the URL component, now parse out the actual URL and the title
         matches = URL_RE.match(href)
         href, _, _ = matches.groups()
+        # This assumes filenames do not have trailing whitespace, and is needed
+        # as URL_RE will capture the whitespace between the URL and the title
+        # Would be nicer if we could parse this in the URL matching group
+        href = href.rstrip()
 
         # We only handle foillowing local paths
         # Need to escape spaces
